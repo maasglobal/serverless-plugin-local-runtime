@@ -15,13 +15,19 @@ module.exports = function (S) {
 
   const SCli = require(S.getServerlessPath('utils/cli'));
 
-  class RunTimeNode7Harmony extends S.classes.RuntimeNode {
+  class LocalNodeRuntime extends S.classes.RuntimeNode43 {
 
     static getName() {
-      return 'node7harmony';
+      return 'local-node';
     }
 
     run(func, stage, region, event) {
+
+      const project = S.getProject();
+      let runtimeFlags = [];
+      if (Array.isArray(project.custom.runtime[LocalNodeRuntime.getName()].flags)) {
+        runtimeFlags = project.custom.runtime[LocalNodeRuntime.getName()].flags;
+      }
 
       return this.getEnvVars(func, stage, region)
           // Add ENV vars (from no stage/region) to environment
@@ -66,11 +72,14 @@ module.exports = function (S) {
               const childArgs = [
                 '-e', // evaluate js code
                 evaluateQuery,
-                '--harmony',
-                '--harmony-async-await',
               ];
+
+              // Use project defined flags as args
+              runtimeFlags.forEach(flag => (childArgs.push(flag)));
+
+              // Eval
               const child = spawnSync('node', childArgs, { env: _.merge(env, process.env) });
-              // Call Function
+
               SCli.log('-----------------');
               child.output.forEach(item => { if (item) { console.log(new Buffer(item).toString()); } });
               resolve();
@@ -98,5 +107,5 @@ module.exports = function (S) {
 
   }
 
-  return RunTimeNode7Harmony;
+  return LocalNodeRuntime;
 };

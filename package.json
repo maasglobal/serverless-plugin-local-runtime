@@ -1,5 +1,5 @@
 {
-  "name": "serverless-plugin-runtime",
+  "name": "serverless-plugin-local-runtime",
   "version": "0.1.0",
   "engines": {
     "node": ">=4.0"
