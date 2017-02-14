@@ -6,11 +6,6 @@ const chalk = require('chalk');
 const spawnSync = require('child_process').spawnSync;
 const path = require('path');
 
-// node-stringify always wrap output inside parenthesis, we do not want that.
-const stringify = input => {
-  return require('node-stringify')(input).slice(1).slice(0, -1);
-};
-
 module.exports = function (S) {
 
   const SCli = require(S.getServerlessPath('utils/cli'));
@@ -36,34 +31,21 @@ module.exports = function (S) {
             const functionFile = func.getRootPath(handlerArr[0] + (func.handlerExt || '.js'));
             const functionHandler = handlerArr[1];
             const functionRelativePath = path.relative(process.cwd(), functionFile);
-            const callback = (err, result) => {
 
-              // Show error
-              if (err) {
-                console.log('Failed - This Error Was Returned:');
-                console.log(err.message);
-                console.log(err.stack);
+            // callback file must be required by evaluation, therefore pass only require string to evalQuery
+            // const callback = 'require("serverless-plugin-local-runtime/runtimes/callback")';
 
-                console.log(JSON.stringify({
-                  status: 'error',
-                  response: err.message,
-                  error: err,
-                }, null, 2));
-              }
-
-              // Show success response
-              console.log('Success! - This Response Was Returned:');
-              console.log(JSON.stringify({
-                status: 'success',
-                response: result,
-              }, null, 2));
-            };
-
-            const _context = {
-              done: callback,
-            };
-
-            const evaluateQuery = 'require("./' + functionRelativePath + '").' + functionHandler + '(' + JSON.stringify(event) + ',' + stringify(_context) + ',' + stringify(callback) + ')';
+            const evaluateQuery = `
+              var callback=require("serverless-plugin-local-runtime/runtimes/callback");
+              var context = new Function('return {done: callback}');
+              require("./${functionRelativePath}")
+                .${functionHandler}
+                  (
+                    ${JSON.stringify(event)},
+                    context,
+                    callback
+                  );
+            `;
 
             // Start measuring run duration
             const startTime = process.hrtime();

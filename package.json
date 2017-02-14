@@ -38,7 +38,6 @@
     "eslint-plugin-react": "^5.2.2"
   },
   "dependencies": {
-    "bluebird": "^3.0.6",
-    "node-stringify": "0.0.19"
+    "bluebird": "^3.0.6"
   }
 }
