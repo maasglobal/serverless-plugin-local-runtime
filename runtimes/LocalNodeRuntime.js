@@ -3,7 +3,9 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
 const chalk = require('chalk');
-const spawnSync = require('child_process').spawnSync;
+const child_process = require('child_process');
+// const spawnSync = child_process.spawnSync;
+const spawn = child_process.spawn;
 const path = require('path');
 
 module.exports = function (S) {
@@ -36,14 +38,12 @@ module.exports = function (S) {
             // const callback = 'require("serverless-plugin-local-runtime/runtimes/callback")';
 
             const evaluateQuery = `
-              var callback=require("serverless-plugin-local-runtime/runtimes/callback");
-              var context = new Function('return {done: callback}');
               require("./${functionRelativePath}")
                 .${functionHandler}
                   (
                     ${JSON.stringify(event)},
-                    context,
-                    callback
+                    require("serverless-plugin-local-runtime/runtimes/context"),
+                    require("serverless-plugin-local-runtime/runtimes/callback")
                   );
             `;
 
@@ -59,11 +59,18 @@ module.exports = function (S) {
               // Use project defined flags as args
               runtimeFlags.forEach(flag => (childArgs.push(flag)));
 
-              // Eval
-              const child = spawnSync('node', childArgs, { env: _.merge(env, process.env) });
-
-              SCli.log('-----------------');
-              child.output.forEach(item => { if (item) { console.log(new Buffer(item).toString()); } });
+              // Child process to eval the code
+              const child = spawn('node', childArgs, { env: _.merge(env, process.env) });
+              let responseReceived = false;
+              child.stdout.on('data', data => {
+                if (data.includes('Success! - This Response Was Returned:')) { responseReceived = true; }
+                if (responseReceived) {
+                  SCli.log(chalk.green.bold(`${data}`));
+                } else {
+                  console.log((`${data}`));
+                }
+              });
+              child.stderr.on('data', data => { SCli.log(chalk.red.bold(`${data}`)); });
               resolve();
             })
             .tap(() => {
