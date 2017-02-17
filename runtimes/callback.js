@@ -4,15 +4,7 @@ module.exports = (err, result) => {
 
   // Show error
   if (err) {
-    console.log('Failed - This Error Was Returned:');
-    console.log(err.message);
-    console.log(err.stack);
-
-    console.log(JSON.stringify({
-      status: 'error',
-      response: err.message,
-      error: err,
-    }, null, 2));
+    return;
   }
 
   // Show success response
@@ -21,4 +13,5 @@ module.exports = (err, result) => {
     status: 'success',
     response: result,
   }, null, 2));
+  return;
 };
