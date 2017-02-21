@@ -9,9 +9,6 @@ module.exports = (err, result) => {
 
   // Show success response
   console.log('Success! - This Response Was Returned:');
-  console.log(JSON.stringify({
-    status: 'success',
-    response: result,
-  }, null, 2));
+  console.log(JSON.stringify(result, null, 2));
   return;
 };
