@@ -71,13 +71,13 @@ module.exports = function (S) {
                 }
               });
               child.stderr.on('data', data => { SCli.log(chalk.red.bold(`${data}`)); });
+              child.on('close', () => {
+                const endTime = process.hrtime(startTime);
+                // Convert from seconds and nanoseconds to milliseconds
+                const duration = endTime[0] * 1000 + endTime[1] / 1000000;
+                SCli.log('Duration: ' + duration.toFixed(2) + ' ms');
+              });
               resolve();
-            })
-            .tap(() => {
-              const endTime = process.hrtime(startTime);
-              // Convert from seconds and nanoseconds to milliseconds
-              const duration = endTime[0] * 1000 + endTime[1] / 1000000;
-              SCli.log('Duration: ' + duration.toFixed(2) + ' ms');
             });
           })
           .catch(err => {
