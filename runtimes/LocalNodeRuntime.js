@@ -18,6 +18,10 @@ module.exports = function (S) {
       return 'local-node';
     }
 
+    getName() {
+      return 'nodejs6.10';
+    }
+
     run(func, stage, region, event) {
 
       const project = S.getProject();
