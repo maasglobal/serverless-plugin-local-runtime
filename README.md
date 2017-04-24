@@ -1,22 +1,24 @@
 
 # Serverless local runtime plugin
 
-**Require Serverless^0.5**
+Adds the local Node.js version as the execution environment, with extra flags specified.
 
-Add supports for local Node runtime with Serverless 0.5
+**Requires Serverless^0.5**
 
 ## Supports:
-  - Run local lambda on a child_process when call `sls function run`. In the child process, function are evaluated with flags given to `s-project.json`
+  - Run local lambda on a child_process when called `sls function run`. In the child process, the functions are evaluated with flags given to `s-project.json`.
 
 ## Usage:
-  - Turn runtime setting in `s-function.json` to `local-node`
-  - In `s-project.json`, add to custom field as following
+  - Turn the `runtime` setting in `s-function.json` to `local-node`
+  - In `s-project.json`, add the following to the `custom` field (without the comments):
     ```javascript
       "custom": {
-        "local-node": { // Name of
+        "local-node": { // Name of the runtime
+          "babelify": true, // Babelify input (default: false)
+          "name": "nodejs", // The name/runtime AWS will use (default: nodejs6.10)
           "flags": [
-            --harmony
-            --harmony-async-await
+            "--harmony"
+            "--harmony-async-await"
             // Your flags here
           ]
         }
